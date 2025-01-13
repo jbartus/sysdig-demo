@@ -44,8 +44,8 @@ resource "sysdig_secure_cloud_auth_account_feature" "config_posture" {
 #######################################################################
 
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-  name               = "sysdig-lab"
+  source             = "terraform-aws-modules/vpc/aws"
+  name               = "labtest"
   azs                = ["us-east-2a", "us-east-2b"]
   private_subnets    = ["10.0.0.0/24", "10.0.1.0/24"]
   public_subnets     = ["10.0.128.0/24", "10.0.129.0/24"]
@@ -59,9 +59,9 @@ module "vpc" {
 module "eks" {
   source = "terraform-aws-modules/eks/aws"
 
-  cluster_name = "sysdig-lab"
-  vpc_id       = module.vpc.vpc_id
-  subnet_ids   = module.vpc.private_subnets
+  cluster_name                             = "sysdig-lab"
+  vpc_id                                   = module.vpc.vpc_id
+  subnet_ids                               = module.vpc.private_subnets
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
 
@@ -140,23 +140,23 @@ resource "helm_release" "sysdig" {
 # Run a stand-alone Amazon Linux EC2 Instance accessible by ssh       #
 #######################################################################
 
-resource "aws_security_group" "allow_ssh" {
-  name   = "allow_ssh"
+resource "aws_security_group" "labtest" {
+  name   = "labtest"
   vpc_id = module.vpc.vpc_id
+}
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh_in" {
+  security_group_id = aws_security_group.labtest.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  to_port           = 22
+  ip_protocol       = "tcp"
+}
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_vpc_security_group_ingress_rule" "allow_all_out" {
+  security_group_id = aws_security_group.labtest.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
 }
 
 resource "aws_key_pair" "labkey" {
@@ -172,7 +172,7 @@ resource "aws_instance" "labtest" {
   ami                         = data.aws_ssm_parameter.al2023_ami_arm64.value
   instance_type               = "t4g.large"
   subnet_id                   = module.vpc.public_subnets[0]
+  vpc_security_group_ids      = [aws_security_group.labtest.id]
   associate_public_ip_address = true
-  security_groups             = [aws_security_group.allow_ssh.id]
   key_name                    = aws_key_pair.labkey.key_name
 }

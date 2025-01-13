@@ -1,6 +1,5 @@
  # TODO
  - connect CDR
- - break out security group rules per docs recc
  - aws cli instead of ssh?
  - prefx/tag with blame name
  - spot instances
