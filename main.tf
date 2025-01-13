@@ -45,7 +45,6 @@ resource "sysdig_secure_cloud_auth_account_feature" "config_posture" {
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
-
   name               = "sysdig-lab"
   azs                = ["us-east-2a", "us-east-2b"]
   private_subnets    = ["10.0.0.0/24", "10.0.1.0/24"]
@@ -63,7 +62,6 @@ module "eks" {
   cluster_name = "sysdig-lab"
   vpc_id       = module.vpc.vpc_id
   subnet_ids   = module.vpc.private_subnets
-
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
 
