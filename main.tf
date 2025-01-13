@@ -166,9 +166,13 @@ resource "aws_key_pair" "labkey" {
   public_key = file("~/.ssh/id_ed25519.pub")
 }
 
+data "aws_ssm_parameter" "al2023_ami_arm64" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
+}
+
 resource "aws_instance" "labtest" {
-  ami                         = "ami-0d7ae6a161c5c4239"
-  instance_type               = "t3.large"
+  ami                         = data.aws_ssm_parameter.al2023_ami_arm64.value
+  instance_type               = "t4g.large"
   subnet_id                   = module.vpc.public_subnets[0]
   associate_public_ip_address = true
   security_groups             = [aws_security_group.allow_ssh.id]

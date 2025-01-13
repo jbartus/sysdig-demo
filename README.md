@@ -1,5 +1,4 @@
  # TODO
- - dynamic ami
  - connect CDR
  - break out security group rules per docs recc
  - aws cli instead of ssh?
