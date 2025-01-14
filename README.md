@@ -1,5 +1,8 @@
  # TODO
+ - enable iam/ciem
  - connect CDR
+ - enable host scanning
+ - enable workload scanning
  - aws cli instead of ssh?
  - prefx/tag with blame name
  - spot instances
