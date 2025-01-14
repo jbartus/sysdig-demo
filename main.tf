@@ -2,42 +2,42 @@
 # Connect the Sysdig CNAPP SaaS control plane to the AWS Account      #
 #######################################################################
 
-# terraform {
-#   required_providers {
-#     sysdig = {
-#       source  = "sysdiglabs/sysdig"
-#       version = "~>1.42"
-#     }
-#   }
-# }
+terraform {
+  required_providers {
+    sysdig = {
+      source  = "sysdiglabs/sysdig"
+      version = "~>1.42"
+    }
+  }
+}
 
-# variable "api_token" {
-#   type = string
-# }
+variable "api_token" {
+  type = string
+}
 
-# provider "sysdig" {
-#   sysdig_secure_url       = "https://app.us4.sysdig.com"
-#   sysdig_secure_api_token = var.api_token
-# }
+provider "sysdig" {
+  sysdig_secure_url       = "https://app.us4.sysdig.com"
+  sysdig_secure_api_token = var.api_token
+}
 
-# module "onboarding" {
-#   source  = "sysdiglabs/secure/aws//modules/onboarding"
-#   version = "~>1.1"
-# }
+module "onboarding" {
+  source  = "sysdiglabs/secure/aws//modules/onboarding"
+  version = "~>1.1"
+}
 
-# module "config-posture" {
-#   source                   = "sysdiglabs/secure/aws//modules/config-posture"
-#   version                  = "~>1.1"
-#   sysdig_secure_account_id = module.onboarding.sysdig_secure_account_id
-# }
+module "config-posture" {
+  source                   = "sysdiglabs/secure/aws//modules/config-posture"
+  version                  = "~>1.1"
+  sysdig_secure_account_id = module.onboarding.sysdig_secure_account_id
+}
 
-# resource "sysdig_secure_cloud_auth_account_feature" "config_posture" {
-#   account_id = module.onboarding.sysdig_secure_account_id
-#   type       = "FEATURE_SECURE_CONFIG_POSTURE"
-#   enabled    = true
-#   components = [module.config-posture.config_posture_component_id]
-#   depends_on = [module.config-posture]
-# }
+resource "sysdig_secure_cloud_auth_account_feature" "config_posture" {
+  account_id = module.onboarding.sysdig_secure_account_id
+  type       = "FEATURE_SECURE_CONFIG_POSTURE"
+  enabled    = true
+  components = [module.config-posture.config_posture_component_id]
+  depends_on = [module.config-posture]
+}
 
 #######################################################################
 # Create a VPC for test resources to live in                          #
@@ -56,85 +56,85 @@ module "vpc" {
 # Create a two-node EKS cluster                                       #
 #######################################################################
 
-# module "eks" {
-#   source = "terraform-aws-modules/eks/aws"
+module "eks" {
+  source = "terraform-aws-modules/eks/aws"
 
-#   cluster_name                             = "sysdig-lab"
-#   vpc_id                                   = module.vpc.vpc_id
-#   subnet_ids                               = module.vpc.private_subnets
-#   cluster_endpoint_public_access           = true
-#   enable_cluster_creator_admin_permissions = true
+  cluster_name                             = "sysdig-lab"
+  vpc_id                                   = module.vpc.vpc_id
+  subnet_ids                               = module.vpc.private_subnets
+  cluster_endpoint_public_access           = true
+  enable_cluster_creator_admin_permissions = true
 
-#   eks_managed_node_groups = {
-#     example = {
-#       instance_types = ["t3.xlarge"]
-#       min_size       = 2
-#       max_size       = 2
-#       desired_size   = 2
-#     }
-#   }
-# }
+  eks_managed_node_groups = {
+    example = {
+      instance_types = ["t3.xlarge"]
+      min_size       = 2
+      max_size       = 2
+      desired_size   = 2
+    }
+  }
+}
 
-# resource "null_resource" "kubectl" {
-#   depends_on = [module.eks]
-#   provisioner "local-exec" {
-#     command = "aws eks update-kubeconfig --name ${module.eks.cluster_name}"
-#   }
-# }
+resource "null_resource" "kubectl" {
+  depends_on = [module.eks]
+  provisioner "local-exec" {
+    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name}"
+  }
+}
 
 # #######################################################################
 # # Deploy the Sysdig Agent to the EKS nodes via Helm                   #
 # #######################################################################
 
-# data "aws_eks_cluster_auth" "this" {
-#   name = module.eks.cluster_name
-# }
+data "aws_eks_cluster_auth" "this" {
+  name = module.eks.cluster_name
+}
 
-# provider "helm" {
-#   kubernetes {
-#     host                   = module.eks.cluster_endpoint
-#     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-#     token                  = data.aws_eks_cluster_auth.this.token
-#   }
-# }
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    token                  = data.aws_eks_cluster_auth.this.token
+  }
+}
 
-# variable "access_key" {
-#   type = string
-# }
+variable "access_key" {
+  type = string
+}
 
-# resource "helm_release" "sysdig" {
-#   depends_on       = [null_resource.kubectl]
-#   name             = "sysdig-agent"
-#   namespace        = "sysdig-agent"
-#   create_namespace = true
-#   chart            = "sysdig-deploy"
-#   repository       = "https://charts.sysdig.com"
+resource "helm_release" "sysdig" {
+  depends_on       = [null_resource.kubectl]
+  name             = "sysdig-agent"
+  namespace        = "sysdig-agent"
+  create_namespace = true
+  chart            = "sysdig-deploy"
+  repository       = "https://charts.sysdig.com"
 
-#   set {
-#     name  = "global.clusterConfig.name"
-#     value = module.eks.cluster_name
-#   }
-#   set {
-#     name  = "global.kspm.deploy"
-#     value = true
-#   }
-#   set_sensitive {
-#     name  = "global.sysdig.accessKey"
-#     value = var.access_key
-#   }
-#   set {
-#     name  = "global.sysdig.region"
-#     value = "us4"
-#   }
-#   set {
-#     name  = "nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy"
-#     value = false
-#   }
-#   set {
-#     name  = "nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly"
-#     value = true
-#   }
-# }
+  set {
+    name  = "global.clusterConfig.name"
+    value = module.eks.cluster_name
+  }
+  set {
+    name  = "global.kspm.deploy"
+    value = true
+  }
+  set_sensitive {
+    name  = "global.sysdig.accessKey"
+    value = var.access_key
+  }
+  set {
+    name  = "global.sysdig.region"
+    value = "us4"
+  }
+  set {
+    name  = "nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy"
+    value = false
+  }
+  set {
+    name  = "nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly"
+    value = true
+  }
+}
 
 #######################################################################
 # Run a stand-alone Amazon Linux EC2 Instance accessible by SSM       #
