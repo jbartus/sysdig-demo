@@ -3,6 +3,7 @@
  - connect CDR
  - enable host scanning
  - enable workload scanning
+ - rapid connect
  - prefx/tag with blame name
  - spot instances
  - mermaid diagram
