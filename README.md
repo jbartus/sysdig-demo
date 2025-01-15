@@ -1,6 +1,6 @@
  # TODO
- - enable iam/ciem
- - connect CDR
+ - enable iam/ciem - can't, role name collision
+ - connect CDR - can't, role name collision
  - enable host scanning
  - enable workload scanning
  - rapid connect
