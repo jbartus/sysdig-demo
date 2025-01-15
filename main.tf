@@ -185,3 +185,7 @@ resource "aws_instance" "labtest" {
   iam_instance_profile        = aws_iam_instance_profile.lab_instance_profile.name
   associate_public_ip_address = true
 }
+
+output "ssmcmd" {
+  value = "aws ssm start-session --target ${aws_instance.labtest.id}"
+}
