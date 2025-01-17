@@ -199,6 +199,7 @@ resource "aws_instance" "labtest" {
   vpc_security_group_ids      = [aws_security_group.labtest.id]
   iam_instance_profile        = aws_iam_instance_profile.lab_instance_profile.name
   associate_public_ip_address = true
+  user_data                   = "#!/bin/bash\ncurl -s https://download.sysdig.com/stable/install-agent | sudo bash -s -- --access_key ${var.access_key} --collector ingest.us4.sysdig.com --secure true"
 }
 
 output "ssmcmd" {
