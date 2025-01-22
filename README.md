@@ -1,7 +1,6 @@
  # TODO
  - enable iam/ciem - can't, role name collision
  - connect CDR - can't, role name collision
- - enable workload scanning
  - rapid connect
  - prefx/tag with blame name
  - spot instances
