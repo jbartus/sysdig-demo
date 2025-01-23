@@ -6,6 +6,10 @@
  - spot instances
  - mermaid diagram
 
+# Prerequisites
+- a Sysdig Secure account
+- an AWS account
+
 # How to use this repo
 
 ## clone it
