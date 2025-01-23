@@ -149,6 +149,26 @@ resource "helm_release" "sysdig" {
     name  = "nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly"
     value = true
   }
+  set {
+    name  = "rapidResponse.enabled"
+    value = true
+  }
+  set {
+    name  = "rapidResponse.rapidResponse.passphrase"
+    value = "12345"
+  }
+}
+
+data "sysdig_current_user" "me" {
+}
+
+resource "sysdig_secure_team" "rapid_responders" {
+  name = "rapid responders"
+
+  user_roles {
+    email = data.sysdig_current_user.me.email
+    role  = "ROLE_TEAM_MANAGER"
+  }
 }
 
 #######################################################################
