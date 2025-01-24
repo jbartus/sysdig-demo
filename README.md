@@ -3,7 +3,14 @@
  - connect CDR - can't, role name collision
  - prefx/tag with blame name
  - spot instances
- - mermaid diagram
+
+# Diagram
+```mermaid
+flowchart LR
+    S(Sysdig) --> A(AWS Account)
+    S --> K(EKS Cluster)
+    S <--> H(Host Agent)
+```
 
 # Prerequisites
 - a Sysdig Secure account
