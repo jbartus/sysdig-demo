@@ -22,6 +22,7 @@ flowchart LR
 ```
 git clone https://github.com/jbartus/sysdig-lab.git
 cd sysdig-lab/
+terraform init
 ```
 
 ## set some variables
