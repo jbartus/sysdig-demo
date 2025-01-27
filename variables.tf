@@ -7,4 +7,5 @@ variable "api_token" {
 variable "access_key" {
   description = "for agents"
   type        = string
+  sensitive   = true
 }
