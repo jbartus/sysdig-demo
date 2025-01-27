@@ -2,24 +2,6 @@
 # Connect the Sysdig CNAPP SaaS control plane to the AWS Account      #
 #######################################################################
 
-terraform {
-  required_providers {
-    sysdig = {
-      source  = "sysdiglabs/sysdig"
-      version = "~>1.42"
-    }
-  }
-}
-
-variable "api_token" {
-  type = string
-}
-
-provider "sysdig" {
-  sysdig_secure_url       = "https://app.us4.sysdig.com"
-  sysdig_secure_api_token = var.api_token
-}
-
 module "onboarding" {
   source  = "sysdiglabs/secure/aws//modules/onboarding"
   version = "~>1.1"
@@ -100,22 +82,6 @@ resource "null_resource" "kubectl" {
 # #######################################################################
 # # Deploy the Sysdig Agent to the EKS nodes via Helm                   #
 # #######################################################################
-
-data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = module.eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-    token                  = data.aws_eks_cluster_auth.this.token
-  }
-}
-
-variable "access_key" {
-  type = string
-}
 
 resource "helm_release" "sysdig" {
   depends_on       = [null_resource.kubectl]
@@ -220,8 +186,4 @@ resource "aws_instance" "labtest" {
   iam_instance_profile        = aws_iam_instance_profile.lab_instance_profile.name
   associate_public_ip_address = true
   user_data                   = "#!/bin/bash\ncurl -s https://download.sysdig.com/stable/install-agent | sudo bash -s -- --access_key ${var.access_key} --collector ingest.us4.sysdig.com --secure true"
-}
-
-output "ssmcmd" {
-  value = "aws ssm start-session --target ${aws_instance.labtest.id}"
 }
