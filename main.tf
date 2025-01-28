@@ -90,7 +90,7 @@ resource "null_resource" "kubectl" {
 }
 
 resource "null_resource" "annotate_storageclass" {
-  depends_on = null_resource.kubectl
+  depends_on = [null_resource.kubectl]
   provisioner "local-exec" {
     command = "kubectl annotate storageclass gp2 storageclass.kubernetes.io/is-default-class=true"
   }
