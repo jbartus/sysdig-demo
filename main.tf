@@ -1,42 +1,4 @@
 #######################################################################
-# Connect the Sysdig CNAPP SaaS control plane to the AWS Account      #
-#######################################################################
-
-module "onboarding" {
-  source  = "sysdiglabs/secure/aws//modules/onboarding"
-  version = "~>1.1"
-}
-
-module "config-posture" {
-  source                   = "sysdiglabs/secure/aws//modules/config-posture"
-  version                  = "~>1.1"
-  sysdig_secure_account_id = module.onboarding.sysdig_secure_account_id
-}
-
-resource "sysdig_secure_cloud_auth_account_feature" "config_posture" {
-  account_id = module.onboarding.sysdig_secure_account_id
-  type       = "FEATURE_SECURE_CONFIG_POSTURE"
-  enabled    = true
-  components = [module.config-posture.config_posture_component_id]
-  depends_on = [module.config-posture]
-}
-
-module "agentless-scanning" {
-  source                   = "sysdiglabs/secure/aws//modules/agentless-scanning"
-  version                  = "~>1.1"
-  regions                  = ["us-east-1", "us-east-2"]
-  sysdig_secure_account_id = module.onboarding.sysdig_secure_account_id
-}
-
-resource "sysdig_secure_cloud_auth_account_feature" "agentless_scanning" {
-  account_id = module.onboarding.sysdig_secure_account_id
-  type       = "FEATURE_SECURE_AGENTLESS_SCANNING"
-  enabled    = true
-  components = [module.agentless-scanning.scanning_role_component_id, module.agentless-scanning.crypto_key_component_id]
-  depends_on = [module.agentless-scanning]
-}
-
-#######################################################################
 # Create a VPC for test resources to live in                          #
 #######################################################################
 
