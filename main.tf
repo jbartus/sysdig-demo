@@ -5,9 +5,9 @@
 module "vpc" {
   source             = "terraform-aws-modules/vpc/aws"
   name               = "labtest"
-  azs                = ["us-east-2a", "us-east-2b"]
-  private_subnets    = ["10.0.0.0/24", "10.0.1.0/24"]
-  public_subnets     = ["10.0.128.0/24", "10.0.129.0/24"]
+  azs                = ["us-east-2a", "us-east-2b", "us-east-2c"]
+  private_subnets    = ["10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24"]
+  public_subnets     = ["10.0.128.0/24", "10.0.129.0/24", "10.0.130.0/24"]
   enable_nat_gateway = true
 }
 
@@ -33,9 +33,10 @@ module "eks" {
   eks_managed_node_groups = {
     example = {
       instance_types = ["t3.xlarge"]
-      min_size       = 2
-      max_size       = 2
-      desired_size   = 2
+      min_size       = 3
+      max_size       = 3
+      desired_size   = 3
+      capacity_type  = "SPOT"
 
       iam_role_additional_policies = {
         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"

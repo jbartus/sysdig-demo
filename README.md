@@ -2,7 +2,6 @@
  - enable iam/ciem - can't, role name collision
  - connect CDR - can't, role name collision
  - prefx/tag with blame name
- - spot instances
 
 # Diagram
 ```mermaid
